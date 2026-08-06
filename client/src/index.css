@@ -1,0 +1,56 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+  Centralized theme tokens. Every color, font, and radius used across the
+  app is defined here once and referenced via CSS variables (through
+  tailwind.config.js) rather than hardcoded in components. Changing the
+  brand later means editing this file only.
+*/
+:root {
+  /* Brand -- "varsity" palette: deep collegiate green + gold, not generic SaaS indigo */
+  --color-primary: 21 50 38; /* #153226 */
+  --color-primary-light: 30 74 56; /* #1E4A38 */
+  --color-accent: 212 167 44; /* #D4A72C */
+  --color-accent-light: 230 195 96; /* #E6C360 */
+
+  /* Surfaces */
+  --color-bg: 247 247 244; /* #F7F7F4 */
+  --color-surface: 255 255 255;
+  --color-sidebar: 21 50 38; /* matches primary -- sidebar is a brand surface, not neutral gray */
+  --color-border: 227 227 221;
+
+  /* Text */
+  --color-text: 20 35 28; /* #14231C */
+  --color-text-muted: 91 107 99; /* #5B6B63 */
+  --color-text-inverse: 247 247 244;
+
+  /* Semantic status */
+  --color-success: 22 163 74;
+  --color-success-bg: 220 245 227;
+  --color-warning: 217 119 6;
+  --color-warning-bg: 253 235 208;
+  --color-danger: 220 38 38;
+  --color-danger-bg: 253 224 224;
+  --color-info: 37 99 235;
+  --color-info-bg: 219 234 254;
+
+  /* Radius */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+}
+
+body {
+  background-color: rgb(var(--color-bg));
+  color: rgb(var(--color-text));
+  font-family: 'Inter', system-ui, sans-serif;
+}
+
+/* Signature element: a left-edge stripe on cards/active nav items -- a
+   quiet nod to varsity-jacket piping, used sparingly and consistently
+   rather than decoration applied everywhere. */
+.stripe-accent {
+  border-left: 3px solid rgb(var(--color-accent));
+}
