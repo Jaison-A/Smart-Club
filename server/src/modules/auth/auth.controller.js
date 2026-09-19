@@ -49,4 +49,9 @@ const getMe = catchAsync(async (req, res) => {
   return success(res, 200, { user: req.user }, 'Current user fetched');
 });
 
-module.exports = { register, login, refresh, logout, getMe };
+const changePassword = catchAsync(async (req, res) => {
+  await authService.changePassword(req.user._id, req.body.currentPassword, req.body.newPassword);
+  return success(res, 200, null, 'Password changed successfully. Please log in again.');
+});
+
+module.exports = { register, login, refresh, logout, getMe, changePassword };

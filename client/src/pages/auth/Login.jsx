@@ -92,7 +92,7 @@ export default function Login() {
               required
             />
 
-            <Button type="submit" className="w-full" disabled={isSubmitting}>
+            <Button type="submit" className="w-full gradient-accent border-none hover:opacity-90" disabled={isSubmitting}>
               {isSubmitting ? 'Logging in...' : 'Log in'}
             </Button>
           </form>

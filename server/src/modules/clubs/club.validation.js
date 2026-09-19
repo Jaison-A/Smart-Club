@@ -7,6 +7,7 @@ const socialLinksSchema = z
   .object({
     instagram: z.string().trim().url().optional().or(z.literal('')),
     linkedin: z.string().trim().url().optional().or(z.literal('')),
+    github: z.string().trim().url().optional().or(z.literal('')),
     website: z.string().trim().url().optional().or(z.literal('')),
   })
   .optional();
@@ -15,6 +16,8 @@ const createClubSchema = z.object({
   body: z.object({
     name: z.string().trim().min(2, 'Name must be at least 2 characters').max(100),
     description: z.string().trim().max(2000).optional(),
+    vision: z.string().trim().max(1000).optional(),
+    mission: z.string().trim().max(1000).optional(),
     category: z.string().trim().max(50).optional(),
     logoUrl: z.string().trim().url().optional().or(z.literal('')),
     coverImageUrl: z.string().trim().url().optional().or(z.literal('')),
@@ -30,12 +33,13 @@ const updateClubSchema = z.object({
     .object({
       name: z.string().trim().min(2).max(100),
       description: z.string().trim().max(2000),
+      vision: z.string().trim().max(1000),
+      mission: z.string().trim().max(1000),
       category: z.string().trim().max(50),
       logoUrl: z.string().trim().url().or(z.literal('')),
       coverImageUrl: z.string().trim().url().or(z.literal('')),
       tags: z.array(z.string().trim().min(1)).max(20),
       socialLinks: socialLinksSchema,
-      status: z.enum(['active', 'pending', 'archived']),
     })
     .partial(),
   params: z.object({
@@ -70,9 +74,18 @@ const listClubsQuerySchema = z.object({
     category: z.string().trim().optional(),
     tag: z.string().trim().optional(),
     search: z.string().trim().optional(),
-    status: z.enum(['active', 'pending', 'archived']).optional(),
+    status: z.enum(['pending', 'active', 'rejected', 'suspended', 'archived']).optional(),
     page: z.string().regex(/^\d+$/).optional(),
     limit: z.string().regex(/^\d+$/).optional(),
+  }),
+});
+
+const rejectClubSchema = z.object({
+  body: z.object({
+    reason: z.string().trim().max(500).optional(),
+  }),
+  params: z.object({
+    id: objectId('club id'),
   }),
 });
 
@@ -80,6 +93,7 @@ module.exports = {
   createClubSchema,
   updateClubSchema,
   clubIdParamSchema,
+  rejectClubSchema,
   assignCoordinatorSchema,
   memberParamSchema,
   listClubsQuerySchema,

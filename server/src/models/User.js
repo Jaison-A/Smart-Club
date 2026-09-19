@@ -57,6 +57,10 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    isActive: {
+      type: Boolean,
+      default: true,
+    },
     // Hashed refresh tokens, not raw ones — if the DB is ever leaked,
     // stored tokens are useless without the original value.
     refreshTokens: {

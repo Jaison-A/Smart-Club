@@ -20,16 +20,74 @@ async function generateUniqueSlug(name) {
   return slug;
 }
 
-async function createClub(payload, creatorId) {
+async function createClub(payload, creator) {
   const slug = await generateUniqueSlug(payload.name);
+
+  // Architecture decision: any authenticated user can create a club
+  // (not just admins) — they become its coordinator, and the club
+  // starts 'pending' until an admin reviews it. An admin creating a
+  // club directly skips review (they don't need to approve themselves)
+  // and isn't auto-added as a "coordinator" — admins manage clubs
+  // through their role, not by being listed on them.
+  const isAdminCreator = creator.role === 'admin';
 
   const club = await Club.create({
     ...payload,
     slug,
-    createdBy: creatorId,
-    status: 'pending', // new clubs start pending until an admin activates them
+    createdBy: creator._id,
+    status: isAdminCreator ? 'active' : 'pending',
+    coordinators: isAdminCreator ? [] : [creator._id],
   });
 
+  if (!isAdminCreator && creator.role === 'student') {
+    creator.role = 'coordinator';
+    await creator.save({ validateBeforeSave: false });
+  }
+
+  if (!isAdminCreator) {
+    await Membership.create({ club: club._id, user: creator._id, role: 'coordinator' });
+  }
+
+  return club;
+}
+
+const APPROVABLE_FROM = ['pending', 'rejected'];
+
+async function approveClub(club) {
+  if (!APPROVABLE_FROM.includes(club.status)) {
+    throw new AppError(`Cannot approve a club with status '${club.status}'`, 400);
+  }
+  club.status = 'active';
+  club.rejectionReason = '';
+  await club.save();
+  return club;
+}
+
+async function rejectClub(club, reason) {
+  if (club.status !== 'pending') {
+    throw new AppError(`Cannot reject a club with status '${club.status}' — only pending clubs can be rejected`, 400);
+  }
+  club.status = 'rejected';
+  club.rejectionReason = reason || '';
+  await club.save();
+  return club;
+}
+
+async function suspendClub(club) {
+  if (club.status !== 'active') {
+    throw new AppError(`Cannot suspend a club with status '${club.status}' — only active clubs can be suspended`, 400);
+  }
+  club.status = 'suspended';
+  await club.save();
+  return club;
+}
+
+async function restoreClub(club) {
+  if (club.status !== 'suspended') {
+    throw new AppError(`Cannot restore a club with status '${club.status}' — only suspended clubs can be restored`, 400);
+  }
+  club.status = 'active';
+  await club.save();
   return club;
 }
 
@@ -62,11 +120,25 @@ async function listClubs({ category, tag, search, status, page = 1, limit = 20 }
   };
 }
 
-async function getClubBySlug(slug) {
+async function getClubBySlug(slug, requestingUser) {
   const club = await Club.findOne({ slug }).populate('coordinators', 'name email avatarUrl');
   if (!club) {
     throw new AppError('Club not found', 404);
   }
+
+  if (club.status !== 'active') {
+    const isAdmin = requestingUser?.role === 'admin';
+    const isOwnCoordinator = requestingUser
+      ? club.coordinators.some((c) => c._id.toString() === requestingUser._id.toString())
+      : false;
+
+    // 404, not 403 -- a stranger shouldn't be able to tell a pending/
+    // rejected/suspended club exists at all just by guessing a slug.
+    if (!isAdmin && !isOwnCoordinator) {
+      throw new AppError('Club not found', 404);
+    }
+  }
+
   return club;
 }
 
@@ -192,6 +264,10 @@ async function removeMember(clubId, userId) {
 
 module.exports = {
   createClub,
+  approveClub,
+  rejectClub,
+  suspendClub,
+  restoreClub,
   listClubs,
   getClubBySlug,
   updateClub,

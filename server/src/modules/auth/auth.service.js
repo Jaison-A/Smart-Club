@@ -54,6 +54,10 @@ async function loginUser({ email, password }) {
     throw new AppError('Invalid email or password', 401);
   }
 
+  if (!user.isActive) {
+    throw new AppError('This account has been disabled. Contact an administrator.', 403);
+  }
+
   const tokens = await issueTokenPair(user);
   return { user, ...tokens };
 }
@@ -101,9 +105,27 @@ async function logoutUser(userId, refreshToken) {
   await user.save({ validateBeforeSave: false });
 }
 
+async function changePassword(userId, currentPassword, newPassword) {
+  const user = await User.findById(userId).select('+password +refreshTokens');
+  if (!user) throw new AppError('User not found', 404);
+
+  const isMatch = await user.comparePassword(currentPassword);
+  if (!isMatch) {
+    throw new AppError('Current password is incorrect', 401);
+  }
+
+  user.password = newPassword; // pre('save') hook re-hashes it
+  // Changing the password invalidates every other session -- if an
+  // account was compromised, this is the point where old sessions
+  // (including an attacker's) should stop working.
+  user.refreshTokens = [];
+  await user.save();
+}
+
 module.exports = {
   registerUser,
   loginUser,
   refreshAccessToken,
   logoutUser,
+  changePassword,
 };

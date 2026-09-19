@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { GraduationCap, LogOut } from 'lucide-react';
+import { GraduationCap, LogOut, Settings as SettingsIcon } from 'lucide-react';
 import { navByRole } from '../../config/nav';
 import { useAuth } from '../../context/AuthContext';
 
@@ -47,6 +47,17 @@ export default function Sidebar() {
             <p className="truncate text-xs capitalize text-white/50">{user?.role}</p>
           </div>
         </div>
+        <NavLink
+          to="/settings"
+          className={({ isActive }) =>
+            `mt-1 flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+              isActive ? 'bg-white/10 text-white' : 'text-white/70 hover:bg-white/5 hover:text-white'
+            }`
+          }
+        >
+          <SettingsIcon size={18} strokeWidth={2} />
+          Settings
+        </NavLink>
         <button
           onClick={logout}
           className="mt-1 flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-white/70 transition-colors hover:bg-white/5 hover:text-white"

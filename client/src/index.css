@@ -7,26 +7,28 @@
   app is defined here once and referenced via CSS variables (through
   tailwind.config.js) rather than hardcoded in components. Changing the
   brand later means editing this file only.
+
+  Two themes: light (default, "varsity" green/gold) and dark (matched to
+  the Campus Club Hub reference: deep navy surfaces, cyan-to-purple
+  gradient accents). Switched via a `data-theme` attribute on <html>,
+  set by ThemeContext.
 */
 :root {
-  /* Brand -- "varsity" palette: deep collegiate green + gold, not generic SaaS indigo */
   --color-primary: 21 50 38; /* #153226 */
   --color-primary-light: 30 74 56; /* #1E4A38 */
   --color-accent: 212 167 44; /* #D4A72C */
   --color-accent-light: 230 195 96; /* #E6C360 */
+  --gradient-accent: linear-gradient(90deg, rgb(var(--color-accent)), rgb(var(--color-accent-light)));
 
-  /* Surfaces */
   --color-bg: 247 247 244; /* #F7F7F4 */
   --color-surface: 255 255 255;
-  --color-sidebar: 21 50 38; /* matches primary -- sidebar is a brand surface, not neutral gray */
+  --color-sidebar: 21 50 38;
   --color-border: 227 227 221;
 
-  /* Text */
   --color-text: 20 35 28; /* #14231C */
   --color-text-muted: 91 107 99; /* #5B6B63 */
   --color-text-inverse: 247 247 244;
 
-  /* Semantic status */
   --color-success: 22 163 74;
   --color-success-bg: 220 245 227;
   --color-warning: 217 119 6;
@@ -36,21 +38,58 @@
   --color-info: 37 99 235;
   --color-info-bg: 219 234 254;
 
-  /* Radius */
   --radius-sm: 6px;
   --radius-md: 10px;
   --radius-lg: 16px;
+}
+
+/* Dark theme -- deep navy/near-black surfaces, cyan-to-purple gradient
+   accent (matches the uploaded Campus Club Hub reference). */
+:root[data-theme='dark'] {
+  --color-primary: 34 211 238; /* cyan #22D3EE -- used for links/active states in dark mode */
+  --color-primary-light: 56 189 248;
+  --color-accent: 168 85 247; /* purple #A855F7 */
+  --color-accent-light: 34 211 238;
+  --gradient-accent: linear-gradient(90deg, rgb(34 211 238), rgb(168 85 247));
+
+  --color-bg: 8 11 20; /* #080B14 */
+  --color-surface: 16 20 33; /* #101421 */
+  --color-sidebar: 10 13 22; /* #0A0D16 */
+  --color-border: 30 36 54; /* #1E2436 */
+
+  --color-text: 236 240 250; /* near-white */
+  --color-text-muted: 140 150 175;
+  --color-text-inverse: 8 11 20;
+
+  --color-success: 52 211 153;
+  --color-success-bg: 6 46 36;
+  --color-warning: 251 191 36;
+  --color-warning-bg: 58 44 6;
+  --color-danger: 248 113 113;
+  --color-danger-bg: 62 18 18;
+  --color-info: 96 165 250;
+  --color-info-bg: 14 33 66;
 }
 
 body {
   background-color: rgb(var(--color-bg));
   color: rgb(var(--color-text));
   font-family: 'Inter', system-ui, sans-serif;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 /* Signature element: a left-edge stripe on cards/active nav items -- a
-   quiet nod to varsity-jacket piping, used sparingly and consistently
-   rather than decoration applied everywhere. */
+   quiet nod to varsity-jacket piping in light mode, and to the
+   reference design's gradient accent bars in dark mode. */
 .stripe-accent {
   border-left: 3px solid rgb(var(--color-accent));
+}
+
+/* Gradient primary buttons/highlights -- opt-in via .gradient-accent,
+   used for primary CTAs to match the reference's cyan-to-purple pills.
+   Falls back to a solid accent fill automatically in light mode since
+   --gradient-accent resolves to a two-stop gradient of the same token
+   there too, just a subtler light-mode-appropriate one. */
+.gradient-accent {
+  background-image: var(--gradient-accent);
 }

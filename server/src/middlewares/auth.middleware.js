@@ -33,6 +33,10 @@ const protect = catchAsync(async (req, res, next) => {
     return next(new AppError('The user belonging to this token no longer exists.', 401));
   }
 
+  if (!currentUser.isActive) {
+    return next(new AppError('This account has been disabled. Contact an administrator.', 403));
+  }
+
   req.user = currentUser;
   next();
 });
