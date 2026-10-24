@@ -19,7 +19,8 @@ export default function CreateDrive() {
   const [searchParams] = useSearchParams();
   const clubId = searchParams.get('clubId');
 
-  const [form, setForm] = useState({ title: '', description: '', openDate: '', closeDate: '' });
+  const [form, setForm] = useState({ title: '', description: '', openDate: '', closeDate: '', externalFormUrl: '' });
+  const [useExternalForm, setUseExternalForm] = useState(false);
   const [fields, setFields] = useState([emptyField()]);
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -52,14 +53,20 @@ export default function CreateDrive() {
 
     setIsSubmitting(true);
     try {
-      const formFields = fields
-        .filter((f) => f.label.trim())
-        .map((f) => ({
-          ...f,
-          options: f.type === 'select' ? f.options.filter(Boolean) : undefined,
-        }));
+      const formFields = useExternalForm
+        ? []
+        : fields
+            .filter((f) => f.label.trim())
+            .map((f) => ({
+              ...f,
+              options: f.type === 'select' ? f.options.filter(Boolean) : undefined,
+            }));
 
-      await recruitmentApi.createDrive(clubId, { ...form, formFields });
+      await recruitmentApi.createDrive(clubId, {
+        ...form,
+        formFields,
+        externalFormUrl: useExternalForm ? form.externalFormUrl : '',
+      });
       setSubmitted(true);
     } catch (err) {
       setError(err.response?.data?.message || 'Something went wrong creating the drive.');
@@ -100,6 +107,39 @@ export default function CreateDrive() {
               <Input name="closeDate" type="date" label="Closes" value={form.closeDate} onChange={handleChange} required />
             </div>
 
+            <div className="border-t border-border pt-4">
+              <div className="mb-3 flex items-center gap-2">
+                <label className="flex items-center gap-1.5 text-sm text-ink">
+                  <input
+                    type="radio"
+                    checked={!useExternalForm}
+                    onChange={() => setUseExternalForm(false)}
+                    className="accent-primary"
+                  />
+                  Build a form here
+                </label>
+                <label className="flex items-center gap-1.5 text-sm text-ink">
+                  <input
+                    type="radio"
+                    checked={useExternalForm}
+                    onChange={() => setUseExternalForm(true)}
+                    className="accent-primary"
+                  />
+                  Use an external form (Google Forms, etc.)
+                </label>
+              </div>
+            </div>
+
+            {useExternalForm ? (
+              <Input
+                name="externalFormUrl"
+                label="External form URL"
+                placeholder="https://forms.google.com/..."
+                value={form.externalFormUrl}
+                onChange={handleChange}
+                required
+              />
+            ) : (
             <div className="border-t border-border pt-4">
               <p className="mb-3 text-sm font-medium text-ink">Application form fields</p>
               <div className="space-y-3">
@@ -153,6 +193,7 @@ export default function CreateDrive() {
                 <Plus size={14} /> Add field
               </Button>
             </div>
+            )}
 
             <Button type="submit" className="w-full" disabled={isSubmitting}>
               {isSubmitting ? 'Creating...' : 'Create drive'}

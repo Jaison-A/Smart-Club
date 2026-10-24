@@ -14,6 +14,9 @@ const {
   listClubsQuerySchema,
 } = require('./club.validation');
 const clubController = require('./club.controller');
+const { inviteMemberSchema, setOfficerTitleSchema } = require('./membershipInvite.validation');
+const membershipInviteController = require('./membershipInvite.controller');
+const { nestedRouter: coordinatorRequestNestedRouter } = require('./coordinatorRequest.routes');
 
 const router = express.Router();
 
@@ -119,5 +122,28 @@ router.delete(
   requireClubCoordinatorOrAdmin,
   clubController.removeMember
 );
+router.patch(
+  '/:id/members/:userId/title',
+  protect,
+  validate(setOfficerTitleSchema),
+  loadClubById(),
+  requireClubCoordinatorOrAdmin,
+  clubController.setOfficerTitle
+);
+
+// --- Membership invites (admin or coordinator sends a student a direct invite) ---
+router.post(
+  '/:id/member-invites',
+  protect,
+  validate(inviteMemberSchema),
+  loadClubById(),
+  requireClubCoordinatorOrAdmin,
+  membershipInviteController.inviteMember
+);
+
+// --- Coordinator requests (admin invites staff to coordinate / staff applies) ---
+// Mounted with :id (not :clubId) to match this file's param convention --
+// the nested router's own validation schemas expect params.id.
+router.use('/:id/coordinator-requests', coordinatorRequestNestedRouter);
 
 module.exports = router;

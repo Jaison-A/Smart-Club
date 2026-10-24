@@ -16,6 +16,7 @@ const createDriveSchema = z.object({
       title: z.string().trim().min(2, 'Title must be at least 2 characters').max(150),
       description: z.string().trim().max(3000).optional(),
       formFields: z.array(formFieldSchema).max(30).default([]),
+      externalFormUrl: z.string().trim().url().optional().or(z.literal('')),
       openDate: z.coerce.date(),
       closeDate: z.coerce.date(),
     })
@@ -34,6 +35,7 @@ const updateDriveSchema = z.object({
       title: z.string().trim().min(2).max(150),
       description: z.string().trim().max(3000),
       formFields: z.array(formFieldSchema).max(30),
+      externalFormUrl: z.string().trim().url().or(z.literal('')),
       openDate: z.coerce.date(),
       closeDate: z.coerce.date(),
       status: z.enum(['upcoming', 'open', 'closed']),

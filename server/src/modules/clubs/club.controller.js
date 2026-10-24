@@ -84,7 +84,13 @@ const removeMember = catchAsync(async (req, res) => {
   return success(res, 200, { membership }, 'Member removed successfully');
 });
 
+const setOfficerTitle = catchAsync(async (req, res) => {
+  const membership = await clubService.setOfficerTitle(req.params.id, req.params.userId, req.body.officerTitle);
+  return success(res, 200, { membership }, 'Position updated successfully');
+});
+
 module.exports = {
+  setOfficerTitle,
   createClub,
   approveClub,
   rejectClub,

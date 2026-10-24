@@ -14,11 +14,20 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     async function restoreSession() {
       try {
-        const { data } = await authApi.getMe();
+        // /auth/me is deliberately excluded from the response
+        // interceptor's auto-refresh-and-retry (to avoid a refresh
+        // loop on the refresh endpoint itself). On a hard page reload
+        // the in-memory access token is gone by design, so we have to
+        // explicitly refresh it from the httpOnly cookie first --
+        // otherwise every reload would look like "not logged in" even
+        // with a perfectly valid session.
+        const { data } = await authApi.refresh();
+        setAccessToken(data.data.accessToken);
         setUser(data.data.user);
       } catch {
-        // No valid session — this is a normal, expected outcome for a
-        // logged-out visitor, not an error to surface.
+        // No valid refresh cookie — this is a normal, expected outcome
+        // for a logged-out visitor, not an error to surface.
+        setAccessToken(null);
         setUser(null);
       } finally {
         setIsLoading(false);

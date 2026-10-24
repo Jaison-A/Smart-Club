@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { CheckCircle2, AlertCircle, ArrowLeft } from 'lucide-react';
+import { CheckCircle2, AlertCircle, ArrowLeft, ExternalLink } from 'lucide-react';
 import TopBar from '../../components/layout/TopBar';
 import Card from '../../components/ui/Card';
 import Input from '../../components/ui/Input';
@@ -90,6 +90,18 @@ export default function ApplyToDrive() {
         <Card>
           <p className="text-sm leading-relaxed text-ink-muted">{drive.description}</p>
 
+          {drive.externalFormUrl ? (
+            <div className="mt-6">
+              <p className="mb-3 text-sm text-ink-muted">
+                This club collects applications through an external form.
+              </p>
+              <a href={drive.externalFormUrl} target="_blank" rel="noreferrer">
+                <Button className="w-full">
+                  Open application form <ExternalLink size={15} />
+                </Button>
+              </a>
+            </div>
+          ) : (
           <form onSubmit={handleSubmit} className="mt-6 space-y-4">
             {error && (
               <div className="flex items-center gap-2 rounded-md bg-danger-bg px-3 py-2 text-sm text-danger">
@@ -153,6 +165,7 @@ export default function ApplyToDrive() {
               {isSubmitting ? 'Submitting...' : 'Submit application'}
             </Button>
           </form>
+          )}
         </Card>
       </div>
     </>

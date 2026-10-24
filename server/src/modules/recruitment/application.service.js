@@ -4,6 +4,7 @@ const Membership = require('../../models/Membership');
 const Club = require('../../models/Club');
 const AppError = require('../../utils/AppError');
 const { isAcceptingApplications } = require('./drive.service');
+const notificationService = require('../notifications/notification.service');
 
 // Checks that every required field defined on the drive's form has a
 // non-empty matching response. Deliberately simple (no per-type
@@ -30,6 +31,10 @@ async function submitApplication(driveId, applicantId, { responses, resumeUrl })
 
   if (!isAcceptingApplications(drive)) {
     throw new AppError('This recruitment drive is not currently accepting applications', 400);
+  }
+
+  if (drive.externalFormUrl) {
+    throw new AppError('This drive uses an external application form. Please apply through that link instead.', 400);
   }
 
   validateResponsesAgainstForm(drive.formFields, responses);
@@ -116,6 +121,13 @@ async function updateApplicationStatus(application, { status, reviewNotes }, rev
   if (status === 'accepted') {
     await ensureActiveMembership(application.club, application.applicant);
   }
+
+  const drive = await RecruitmentDrive.findById(application.drive).select('title');
+  await notificationService.notify(application.applicant, {
+    type: 'application_status',
+    message: `Your application to "${drive?.title || 'a recruitment drive'}" is now ${status}.`,
+    link: `/recruitment`,
+  });
 
   return application;
 }

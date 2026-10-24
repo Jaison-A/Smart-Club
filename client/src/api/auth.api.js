@@ -5,5 +5,6 @@ export const authApi = {
   login: (payload) => api.post('/auth/login', payload),
   logout: () => api.post('/auth/logout'),
   getMe: () => api.get('/auth/me'),
+  refresh: () => api.post('/auth/refresh-token'),
   changePassword: (payload) => api.patch('/auth/change-password', payload),
 };

@@ -41,6 +41,16 @@ const recruitmentDriveSchema = new mongoose.Schema(
       type: [formFieldSchema],
       default: [],
     },
+    // If set, this drive routes applicants to an external form (Google
+    // Forms, Typeform, etc.) instead of the internal dynamic-form flow.
+    // `formFields`/internal applications are simply unused for such a
+    // drive -- kept as a plain URL rather than a separate drive "type"
+    // so a coordinator can switch a drive between the two modes freely.
+    externalFormUrl: {
+      type: String,
+      trim: true,
+      default: '',
+    },
     openDate: {
       type: Date,
       required: true,

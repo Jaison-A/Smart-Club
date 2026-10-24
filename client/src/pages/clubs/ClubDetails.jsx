@@ -9,6 +9,7 @@ import EmptyState from '../../components/ui/EmptyState';
 import { useAuth } from '../../context/AuthContext';
 import { clubsApi } from '../../api/clubs.api';
 import { recruitmentApi } from '../../api/recruitment.api';
+import { coordinatorRequestsApi } from '../../api/invites.api';
 
 export default function ClubDetails() {
   const { slug } = useParams();
@@ -17,6 +18,8 @@ export default function ClubDetails() {
   const [drives, setDrives] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const [applyMsg, setApplyMsg] = useState('');
+  const [isApplying, setIsApplying] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -52,6 +55,19 @@ export default function ClubDetails() {
   }
 
   const isStudent = isAuthenticated && user.role === 'student';
+
+  async function handleApplyToCoordinate() {
+    setIsApplying(true);
+    setApplyMsg('');
+    try {
+      await coordinatorRequestsApi.apply(club._id);
+      setApplyMsg('Application submitted. An admin will review it.');
+    } catch (err) {
+      setApplyMsg(err.response?.data?.message || 'Could not submit application.');
+    } finally {
+      setIsApplying(false);
+    }
+  }
 
   return (
     <div>
@@ -176,7 +192,7 @@ export default function ClubDetails() {
             </div>
             <p className="mt-1 font-display text-2xl font-semibold text-ink">{club.memberCount}</p>
 
-            {club.coordinators?.length > 0 && (
+            {club.coordinators?.length > 0 ? (
               <div className="mt-5 border-t border-border pt-4">
                 <p className="text-xs font-medium uppercase tracking-wide text-ink-muted">Coordinators</p>
                 <ul className="mt-2 space-y-2">
@@ -190,6 +206,20 @@ export default function ClubDetails() {
                   ))}
                 </ul>
               </div>
+            ) : (
+              isAuthenticated &&
+              user.role !== 'admin' && (
+                <div className="mt-5 border-t border-border pt-4">
+                  <p className="text-xs text-ink-muted">This club doesn't have a coordinator yet.</p>
+                  {applyMsg ? (
+                    <p className="mt-2 text-xs text-ink">{applyMsg}</p>
+                  ) : (
+                    <Button size="sm" variant="outline" className="mt-2 w-full" onClick={handleApplyToCoordinate} disabled={isApplying}>
+                      {isApplying ? 'Submitting...' : 'Apply to coordinate'}
+                    </Button>
+                  )}
+                </div>
+              )
             )}
           </Card>
         </div>

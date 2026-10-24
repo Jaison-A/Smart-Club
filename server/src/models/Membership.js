@@ -17,6 +17,18 @@ const membershipSchema = new mongoose.Schema(
       enum: ['member', 'core', 'coordinator'],
       default: 'member',
     },
+    // Free-text display position (e.g. "President", "Vice President",
+    // "Treasurer") set by the coordinator. Separate from `role`, which
+    // is the internal permission tier -- an officer's actual
+    // permissions (e.g. being able to post events) are derived from
+    // `officerTitle` being non-empty, not from this string's exact
+    // value, so clubs aren't locked into a fixed title list.
+    officerTitle: {
+      type: String,
+      trim: true,
+      default: '',
+      maxlength: 60,
+    },
     status: {
       type: String,
       enum: ['active', 'left', 'removed'],

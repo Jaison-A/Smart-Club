@@ -1,4 +1,4 @@
-import { LayoutDashboard, Users, ClipboardList, ShieldCheck, Compass, PlusCircle, Calendar, Award } from 'lucide-react';
+import { LayoutDashboard, Users, ClipboardList, ShieldCheck, Compass, PlusCircle, Calendar, Award, Mail } from 'lucide-react';
 
 // One nav map per role. The Sidebar reads from here rather than each
 // dashboard page defining its own links, so adding a page updates
@@ -10,6 +10,7 @@ export const navByRole = {
     { label: 'Recruitment', to: '/recruitment', icon: ClipboardList },
     { label: 'Events', to: '/events', icon: Calendar },
     { label: 'Certificates', to: '/student/certificates', icon: Award },
+    { label: 'Invites', to: '/invites', icon: Mail },
     { label: 'Start a Club', to: '/clubs/new', icon: PlusCircle },
   ],
   coordinator: [
@@ -17,6 +18,7 @@ export const navByRole = {
     { label: 'Members', to: '/coordinator/members', icon: Users },
     { label: 'Recruitment', to: '/recruitment', icon: ClipboardList },
     { label: 'Events', to: '/events', icon: Calendar },
+    { label: 'Invites', to: '/invites', icon: Mail },
     { label: 'Start a Club', to: '/clubs/new', icon: PlusCircle },
   ],
   admin: [

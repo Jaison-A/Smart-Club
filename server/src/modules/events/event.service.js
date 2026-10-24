@@ -1,9 +1,29 @@
 const Event = require('../../models/Event');
 const EventRegistration = require('../../models/EventRegistration');
+const Membership = require('../../models/Membership');
+const Club = require('../../models/Club');
 const AppError = require('../../utils/AppError');
+const notificationService = require('../notifications/notification.service');
 
 async function createEvent(clubId, payload, creatorId) {
   const event = await Event.create({ ...payload, club: clubId, createdBy: creatorId });
+
+  // Notify every active member (except whoever just created it) so
+  // "organizing an event should show in the notification" is real,
+  // not just a UI element with nothing behind it.
+  const [club, members] = await Promise.all([
+    Club.findById(clubId).select('name'),
+    Membership.find({ club: clubId, status: 'active', user: { $ne: creatorId } }).select('user'),
+  ]);
+  await notificationService.notifyMany(
+    members.map((m) => m.user),
+    {
+      type: 'event_created',
+      message: `${club?.name || 'Your club'} posted a new event: "${event.title}".`,
+      link: `/events/${event._id}`,
+    }
+  );
+
   return event;
 }
 

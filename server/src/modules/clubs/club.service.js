@@ -3,6 +3,7 @@ const Membership = require('../../models/Membership');
 const User = require('../../models/User');
 const AppError = require('../../utils/AppError');
 const slugify = require('../../utils/slugify');
+const notificationService = require('../notifications/notification.service');
 
 // Appends a numeric suffix on collision (e.g. "robotics-club-2") instead
 // of failing outright — keeps club creation friction-free for admins.
@@ -53,6 +54,15 @@ async function createClub(payload, creator) {
 
 const APPROVABLE_FROM = ['pending', 'rejected'];
 
+// Who to notify about a club-level decision -- its coordinators, or
+// its creator if it has no coordinators yet (e.g. an admin-created
+// club still awaiting a coordinator invite/application).
+function clubStakeholders(club) {
+  const ids = club.coordinators?.length ? club.coordinators.map((c) => c.toString()) : [];
+  if (club.createdBy && !ids.includes(club.createdBy.toString())) ids.push(club.createdBy.toString());
+  return ids;
+}
+
 async function approveClub(club) {
   if (!APPROVABLE_FROM.includes(club.status)) {
     throw new AppError(`Cannot approve a club with status '${club.status}'`, 400);
@@ -60,6 +70,13 @@ async function approveClub(club) {
   club.status = 'active';
   club.rejectionReason = '';
   await club.save();
+
+  await notificationService.notifyMany(clubStakeholders(club), {
+    type: 'club_approved',
+    message: `"${club.name}" has been approved and is now live.`,
+    link: `/clubs/${club.slug}`,
+  });
+
   return club;
 }
 
@@ -70,6 +87,13 @@ async function rejectClub(club, reason) {
   club.status = 'rejected';
   club.rejectionReason = reason || '';
   await club.save();
+
+  await notificationService.notifyMany(clubStakeholders(club), {
+    type: 'club_rejected',
+    message: `"${club.name}" was not approved.${reason ? ` Reason: ${reason}` : ''}`,
+    link: '',
+  });
+
   return club;
 }
 
@@ -262,6 +286,21 @@ async function removeMember(clubId, userId) {
   return membership;
 }
 
+// Sets a member's display position (President/VP/Treasurer/etc). An
+// empty string clears it back to a regular member. This does NOT
+// touch `role` (the internal member/core/coordinator permission
+// tier) -- a title is cosmetic-plus-event-rights, not a security
+// boundary on its own (see eventOfficerCheck for how it's actually used).
+async function setOfficerTitle(clubId, userId, officerTitle) {
+  const membership = await Membership.findOne({ club: clubId, user: userId, status: 'active' });
+  if (!membership) {
+    throw new AppError('Active membership not found for this user in this club', 404);
+  }
+  membership.officerTitle = officerTitle;
+  await membership.save();
+  return membership;
+}
+
 module.exports = {
   createClub,
   approveClub,
@@ -277,4 +316,5 @@ module.exports = {
   getMembers,
   addMember,
   removeMember,
+  setOfficerTitle,
 };

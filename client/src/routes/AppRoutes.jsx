@@ -23,6 +23,7 @@ import EventsPage from '../pages/events/EventsPage';
 import EventDetails from '../pages/events/EventDetails';
 import CreateEvent from '../pages/events/CreateEvent';
 import Settings from '../pages/settings/Settings';
+import Invites from '../pages/invites/Invites';
 import { useAuth } from '../context/AuthContext';
 
 export default function AppRoutes() {
@@ -93,6 +94,7 @@ export default function AppRoutes() {
           </Route>
 
           <Route path="/settings" element={<Settings />} />
+          <Route path="/invites" element={<Invites />} />
         </Route>
       </Route>
 

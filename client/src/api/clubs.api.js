@@ -15,4 +15,5 @@ export const clubsApi = {
   getMembers: (id, params) => api.get(`/clubs/${id}/members`, { params }),
   addMember: (id, userId) => api.post(`/clubs/${id}/members/${userId}`),
   removeMember: (id, userId) => api.delete(`/clubs/${id}/members/${userId}`),
+  setOfficerTitle: (id, userId, officerTitle) => api.patch(`/clubs/${id}/members/${userId}/title`, { officerTitle }),
 };
