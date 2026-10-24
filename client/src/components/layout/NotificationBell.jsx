@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Bell, Check } from 'lucide-react';
 import { notificationsApi } from '../../api/notifications.api';
 
@@ -116,6 +116,9 @@ export default function NotificationBell() {
               ))
             )}
           </div>
+          <Link to="/notifications" onClick={() => setOpen(false)} className="block border-t border-border px-4 py-2.5 text-center text-sm font-medium text-primary hover:bg-primary/5">
+            View all notifications
+          </Link>
         </div>
       )}
     </div>

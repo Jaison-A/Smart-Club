@@ -423,3 +423,52 @@ curl -s $BASE/certificates/verify/$CERT_ID
 | `404` | Not found (or, for non-active clubs, hidden from you on purpose) |
 | `409` | Duplicate (already applied / already registered / already a member) |
 | `422` | Validation failed — check `errors` array in the response for field-level messages |
+
+
+---
+
+## 11. Added in the latest build
+
+```bash
+# Login with register number instead of email
+curl -X POST $BASE/auth/login -H "Content-Type: application/json" -d '{"email":"21CS045","password":"password123"}'
+
+# Update my profile
+curl -X PATCH $BASE/auth/me -H "Content-Type: application/json" -H "Authorization: Bearer <TOKEN>" \
+  -d '{"bio":"Full-stack dev","skills":["React","Node"],"github":"https://github.com/me"}'
+
+# Upload a profile picture (multipart, field name: avatar)
+curl -X POST $BASE/auth/me/avatar -H "Authorization: Bearer <TOKEN>" -F "avatar=@./me.png"
+
+# My clubs in any status (incl. pending)
+curl $BASE/clubs/mine -H "Authorization: Bearer <TOKEN>"
+
+# Admin: every club regardless of status
+curl "$BASE/clubs?status=all" -H "Authorization: Bearer <ADMIN_TOKEN>"
+
+# Admin: full overview of one user (profile, clubs, applications)
+curl $BASE/admin/users/<USER_ID>/overview -H "Authorization: Bearer <ADMIN_TOKEN>"
+
+# Admin: assign a coordinator immediately, or send an invitation they can accept
+curl -X POST $BASE/clubs/<CLUB_ID>/coordinators -H "Content-Type: application/json" -H "Authorization: Bearer <ADMIN_TOKEN>" -d '{"userId":"<USER_ID>"}'
+curl -X POST $BASE/clubs/<CLUB_ID>/coordinator-requests/invite -H "Content-Type: application/json" -H "Authorization: Bearer <ADMIN_TOKEN>" -d '{"userId":"<USER_ID>"}'
+
+# Staff applies to coordinate an unclaimed club; admin resolves
+curl -X POST $BASE/clubs/<CLUB_ID>/coordinator-requests/apply -H "Authorization: Bearer <TOKEN>"
+curl $BASE/coordinator-requests/applications -H "Authorization: Bearer <ADMIN_TOKEN>"
+curl -X PATCH $BASE/coordinator-requests/<REQUEST_ID>/accept -H "Authorization: Bearer <ADMIN_TOKEN>"
+
+# Position invite to a student, and officer title
+curl -X POST $BASE/clubs/<CLUB_ID>/member-invites -H "Content-Type: application/json" -H "Authorization: Bearer <TOKEN>" -d '{"userId":"<USER_ID>","officerTitle":"Treasurer"}'
+curl -X PATCH $BASE/clubs/<CLUB_ID>/members/<USER_ID>/title -H "Content-Type: application/json" -H "Authorization: Bearer <TOKEN>" -d '{"officerTitle":"President"}'
+
+# Notifications
+curl $BASE/notifications -H "Authorization: Bearer <TOKEN>"
+curl -X PATCH $BASE/notifications/read-all -H "Authorization: Bearer <TOKEN>"
+
+# Club with a faculty advisor, and a drive using an external form
+curl -X POST $BASE/clubs -H "Content-Type: application/json" -H "Authorization: Bearer <TOKEN>" \
+  -d '{"name":"Robotics","facultyAdvisor":{"name":"Dr. Kumar","email":"k@college.edu","designation":"Asst. Professor"}}'
+curl -X POST $BASE/clubs/<CLUB_ID>/drives -H "Content-Type: application/json" -H "Authorization: Bearer <TOKEN>" \
+  -d '{"title":"Fall drive","externalFormUrl":"https://forms.gle/abc","openDate":"2026-10-01","closeDate":"2026-12-01"}'
+```

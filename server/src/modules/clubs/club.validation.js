@@ -12,6 +12,14 @@ const socialLinksSchema = z
   })
   .optional();
 
+const facultyAdvisorSchema = z
+  .object({
+    name: z.string().trim().max(100),
+    email: z.string().trim().email().or(z.literal('')),
+    designation: z.string().trim().max(100),
+  })
+  .partial();
+
 const createClubSchema = z.object({
   body: z.object({
     name: z.string().trim().min(2, 'Name must be at least 2 characters').max(100),
@@ -23,6 +31,7 @@ const createClubSchema = z.object({
     coverImageUrl: z.string().trim().url().optional().or(z.literal('')),
     tags: z.array(z.string().trim().min(1)).max(20).optional(),
     socialLinks: socialLinksSchema,
+    facultyAdvisor: facultyAdvisorSchema.optional(),
   }),
 });
 
@@ -40,6 +49,7 @@ const updateClubSchema = z.object({
       coverImageUrl: z.string().trim().url().or(z.literal('')),
       tags: z.array(z.string().trim().min(1)).max(20),
       socialLinks: socialLinksSchema,
+      facultyAdvisor: facultyAdvisorSchema,
     })
     .partial(),
   params: z.object({
@@ -74,7 +84,7 @@ const listClubsQuerySchema = z.object({
     category: z.string().trim().optional(),
     tag: z.string().trim().optional(),
     search: z.string().trim().optional(),
-    status: z.enum(['pending', 'active', 'rejected', 'suspended', 'archived']).optional(),
+    status: z.enum(['pending', 'active', 'rejected', 'suspended', 'archived', 'all']).optional(),
     page: z.string().regex(/^\d+$/).optional(),
     limit: z.string().regex(/^\d+$/).optional(),
   }),

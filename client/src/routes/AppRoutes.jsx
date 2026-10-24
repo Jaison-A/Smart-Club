@@ -24,6 +24,12 @@ import EventDetails from '../pages/events/EventDetails';
 import CreateEvent from '../pages/events/CreateEvent';
 import Settings from '../pages/settings/Settings';
 import Invites from '../pages/invites/Invites';
+import Profile from '../pages/profile/Profile';
+import Notifications from '../pages/notifications/Notifications';
+import MyApplications from '../pages/student/MyApplications';
+import AdminUserDetail from '../pages/admin/AdminUserDetail';
+import AdminClubs from '../pages/admin/AdminClubs';
+import AdminClubManage from '../pages/admin/AdminClubManage';
 import { useAuth } from '../context/AuthContext';
 
 export default function AppRoutes() {
@@ -66,6 +72,11 @@ export default function AppRoutes() {
           </Route>
           <Route path="/admin/users" element={<ProtectedRoute roles={['admin']} />}>
             <Route index element={<AdminUsers />} />
+            <Route path=":id" element={<AdminUserDetail />} />
+          </Route>
+          <Route path="/admin/clubs" element={<ProtectedRoute roles={['admin']} />}>
+            <Route index element={<AdminClubs />} />
+            <Route path=":slug" element={<AdminClubManage />} />
           </Route>
           <Route path="/admin/approvals" element={<ProtectedRoute roles={['admin']} />}>
             <Route index element={<ClubApprovals />} />
@@ -95,6 +106,11 @@ export default function AppRoutes() {
 
           <Route path="/settings" element={<Settings />} />
           <Route path="/invites" element={<Invites />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/notifications" element={<Notifications />} />
+          <Route path="/applications" element={<ProtectedRoute roles={['student']} />}>
+            <Route index element={<MyApplications />} />
+          </Route>
         </Route>
       </Route>
 

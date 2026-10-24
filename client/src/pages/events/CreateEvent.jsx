@@ -35,8 +35,8 @@ export default function CreateEvent() {
     // If no clubId was passed in, resolve the coordinator's own club --
     // mirrors the same lookup used on the Coordinator Dashboard.
     if (clubId) return;
-    clubsApi.list({ limit: 50 }).then(({ data }) => {
-      const myClub = data.data.clubs.find((c) => c.coordinators?.some((id) => id === user.id || id === user._id));
+    clubsApi.mine().then(({ data }) => {
+      const myClub = data.data.clubs[0];
       if (myClub) setClubId(myClub._id);
     });
   }, [clubId, user]);

@@ -356,3 +356,49 @@ duplicate-application rejection, date-window transitions) needs a run against yo
   notified when accepted/rejected — the roadmap's Notifications module
   will cover this)
 - Events & QR Attendance (next logical module)
+
+---
+
+## Latest build — what changed
+
+### Staying logged in after a page refresh (read this if it ever breaks again)
+The access token lives in memory only; the browser keeps a 7-day **httpOnly refresh cookie**. On every page load the
+frontend calls `POST /auth/refresh-token` once to get a fresh access token. For that to work in *your* environment:
+
+| Setting | Must be |
+|---|---|
+| backend `CLIENT_URL` | the **exact** origin the frontend is served from, e.g. `http://localhost:5173` (scheme + host + port, no trailing slash) |
+| frontend `VITE_API_URL` | the backend API base, e.g. `http://localhost:5000/api/v1` |
+| backend `COOKIE_SECURE` | `false` on plain `http://localhost`; `true` only when served over HTTPS |
+| browser | must not block cookies for localhost |
+
+Root causes fixed: (1) `/auth/me` was never retried after a reload; (2) React `StrictMode` fired the rotating refresh
+call twice, racing the token rotation and orphaning the browser's cookie; (3) rotation is now atomic
+(`findOneAndUpdate` + `$pull`) and every refresh token carries a unique `jti`.
+Regression tests: `npm test` (backend: race + replay; frontend: `AuthProvider` under StrictMode makes exactly one call).
+
+### New / changed endpoints
+```
+POST   /auth/login                       email OR register number (studentId; must match exactly one account)
+PATCH  /auth/me                          update own profile (name, department, year, skills, interests, bio, github, linkedin, website, resumeUrl)
+POST   /auth/me/avatar                   multipart field "avatar" (jpeg/png/webp/gif, <= 5MB, validated server-side)
+GET    /uploads/avatars/<file>           static, served with Cross-Origin-Resource-Policy: cross-origin
+GET    /clubs/mine                       clubs I coordinate, ANY status (pending/rejected/suspended included)
+GET    /clubs?status=all                 admin only
+GET    /admin/users/:id/overview         profile + memberships + applications + counts (admin)
+GET    /users/:id/memberships            self or admin
+POST   /clubs/:id/coordinators           admin: assign a coordinator immediately (body: { userId })
+DELETE /clubs/:id/coordinators/:userId   admin: remove (membership role is downgraded to member)
+POST   /clubs/:id/members/:userId        coordinator/admin: add a member directly
+```
+Clubs also accept `facultyAdvisor: { name, email, designation }`.
+
+### Avatars / file storage
+Uploads are stored on local disk in `server/uploads/avatars` (no cloud credentials needed). **On hosts with an
+ephemeral filesystem (Render/Heroku free tiers) these files vanish on redeploy** — mount a persistent disk, or swap
+the storage engine in `src/config/upload.js` for S3/Cloudinary (only that file and the URL built in
+`auth.controller.js#uploadAvatar` change).
+
+### Not implemented (needs infrastructure/decisions I did not fake)
+Password reset + email verification (need an SMTP service), Socket.io push (notifications are polled every 30s),
+Cloudinary, analytics dashboards, camera-based QR scanning (code entry is used).

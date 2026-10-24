@@ -7,6 +7,7 @@ const applicationController = require('../recruitment/application.controller');
 const eventController = require('../events/event.controller');
 const certificateController = require('../certificates/certificate.controller');
 const User = require('../../models/User');
+const Membership = require('../../models/Membership');
 const catchAsync = require('../../utils/catchAsync');
 const { success } = require('../../utils/apiResponse');
 
@@ -43,6 +44,19 @@ router.get(
   validate(userIdParamSchema),
   requireSelfOrAdmin('id'),
   applicationController.listMyApplications
+);
+
+router.get(
+  '/:id/memberships',
+  protect,
+  validate(userIdParamSchema),
+  requireSelfOrAdmin('id'),
+  catchAsync(async (req, res) => {
+    const memberships = await Membership.find({ user: req.params.id, status: 'active' })
+      .populate('club', 'name slug logoUrl category status')
+      .sort({ joinedAt: -1 });
+    return success(res, 200, { memberships }, 'Memberships fetched successfully');
+  })
 );
 
 router.get(

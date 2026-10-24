@@ -22,6 +22,8 @@ const router = express.Router();
 
 // --- Public routes ---
 router.get('/', optionalAuth, validate(listClubsQuerySchema), clubController.listClubs);
+// Must be registered before '/:slug' or 'mine' would be read as a slug.
+router.get('/mine', protect, clubController.listMyClubs);
 router.get('/:slug', optionalAuth, clubController.getClubBySlug);
 
 // --- Any authenticated user (student, coordinator, or admin) ---

@@ -1,88 +1,64 @@
 import { NavLink } from 'react-router-dom';
-import { GraduationCap, LogOut, Settings as SettingsIcon, X } from 'lucide-react';
+import { LogOut, Settings as SettingsIcon, UserCircle, X } from 'lucide-react';
 import { navByRole } from '../../config/nav';
 import { useAuth } from '../../context/AuthContext';
 import { useSidebar } from '../../context/SidebarContext';
+import BrandLogo from '../ui/BrandLogo';
+import Avatar from '../ui/Avatar';
 
+const linkBase = 'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors';
+const linkIdle = 'text-white/70 hover:bg-white/5 hover:text-white';
+
+// `fixed` at EVERY viewport size (DashboardLayout reserves its width with
+// left padding), so it stays pinned while page content scrolls. Below the sm
+// breakpoint it becomes a slide-in drawer instead.
 export default function Sidebar() {
   const { user, logout } = useAuth();
   const { mobileOpen, setMobileOpen } = useSidebar();
   const items = navByRole[user?.role] || [];
+  const close = () => setMobileOpen(false);
 
   return (
     <aside
-      className={`fixed inset-y-0 left-0 z-40 flex h-screen w-64 shrink-0 flex-col bg-sidebar text-ink-inverse
-        transition-transform duration-200 ease-in-out
-        sm:static sm:translate-x-0
-        ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}`}
+      className={`fixed inset-y-0 left-0 z-40 flex h-screen w-64 flex-col border-r border-white/5 bg-sidebar text-ink-inverse transition-transform duration-200 ease-in-out sm:translate-x-0 ${
+        mobileOpen ? 'translate-x-0' : '-translate-x-full'
+      }`}
+      aria-label="Main navigation"
     >
-      <div className="flex items-center justify-between px-6 py-6">
-        <div className="flex items-center gap-2">
-          <div className="rounded-md bg-accent p-1.5 text-primary">
-            <GraduationCap size={20} strokeWidth={2.25} />
-          </div>
-          <span className="font-display text-lg font-semibold tracking-tight">ClubHub</span>
-        </div>
-        <button
-          onClick={() => setMobileOpen(false)}
-          className="rounded-md p-1 text-white/70 hover:bg-white/10 sm:hidden"
-          aria-label="Close menu"
-        >
+      <div className="flex items-center justify-between px-5 py-5">
+        <BrandLogo size="md" />
+        <button onClick={close} className="rounded-md p-1 text-white/70 hover:bg-white/10 sm:hidden" aria-label="Close menu">
           <X size={18} />
         </button>
       </div>
 
-      <nav className="flex-1 space-y-1 overflow-y-auto px-3">
+      <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-2">
         {items.map(({ label, to, icon: Icon }) => (
-          <NavLink
-            key={to}
-            to={to}
-            end={to === `/${user?.role}`}
-            onClick={() => setMobileOpen(false)}
-            className={({ isActive }) =>
-              `flex items-center gap-3 rounded-md border-l-4 px-3 py-2.5 text-sm font-medium transition-colors
-              ${
-                isActive
-                  ? 'border-accent bg-white/10 text-white'
-                  : 'border-transparent text-white/70 hover:bg-white/5 hover:text-white'
-              }`
-            }
-          >
+          <NavLink key={to} to={to} end={to === `/${user?.role}`} onClick={close} className={({ isActive }) => `${linkBase} ${isActive ? 'nav-active' : linkIdle}`}>
             <Icon size={18} strokeWidth={2} />
             {label}
           </NavLink>
         ))}
       </nav>
 
-      <div className="border-t border-white/10 px-3 py-4">
-        <div className="flex items-center gap-3 rounded-md px-3 py-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-accent font-display text-sm font-semibold text-primary">
-            {user?.name?.[0]?.toUpperCase() || '?'}
-          </div>
+      <div className="space-y-1 border-t border-white/10 px-3 py-4">
+        <NavLink to="/profile" onClick={close} className={({ isActive }) => `${linkBase} ${isActive ? 'nav-active' : linkIdle}`}>
+          <UserCircle size={18} strokeWidth={2} /> Profile
+        </NavLink>
+        <NavLink to="/settings" onClick={close} className={({ isActive }) => `${linkBase} ${isActive ? 'nav-active' : linkIdle}`}>
+          <SettingsIcon size={18} strokeWidth={2} /> Settings
+        </NavLink>
+        <button onClick={logout} className={`${linkBase} ${linkIdle} w-full`}>
+          <LogOut size={18} strokeWidth={2} /> Log out
+        </button>
+
+        <div className="mt-3 flex items-center gap-3 rounded-lg bg-white/5 px-3 py-2.5">
+          <Avatar user={user} size="sm" />
           <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-medium text-white">{user?.name}</p>
             <p className="truncate text-xs capitalize text-white/50">{user?.role}</p>
           </div>
         </div>
-        <NavLink
-          to="/settings"
-          onClick={() => setMobileOpen(false)}
-          className={({ isActive }) =>
-            `mt-1 flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
-              isActive ? 'bg-white/10 text-white' : 'text-white/70 hover:bg-white/5 hover:text-white'
-            }`
-          }
-        >
-          <SettingsIcon size={18} strokeWidth={2} />
-          Settings
-        </NavLink>
-        <button
-          onClick={logout}
-          className="mt-1 flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-white/70 transition-colors hover:bg-white/5 hover:text-white"
-        >
-          <LogOut size={18} strokeWidth={2} />
-          Log out
-        </button>
       </div>
     </aside>
   );

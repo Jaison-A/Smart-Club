@@ -16,6 +16,7 @@ router.get('/ping', (req, res) => {
 
 router.get('/users', validate(listUsersQuerySchema), userController.listUsers);
 router.get('/users/:id', validate(userIdParamSchema), userController.getUser);
+router.get('/users/:id/overview', validate(userIdParamSchema), userController.getUserOverview);
 router.patch('/users/:id/role', validate(setRoleSchema), userController.setRole);
 router.patch('/users/:id/disable', validate(userIdParamSchema), userController.disableUser);
 router.patch('/users/:id/enable', validate(userIdParamSchema), userController.enableUser);

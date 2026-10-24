@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { GraduationCap, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { AlertCircle, CheckCircle2 } from 'lucide-react';
+import BrandLogo from '../../components/ui/BrandLogo';
 import { useAuth } from '../../context/AuthContext';
 import Input from '../../components/ui/Input';
 import Button from '../../components/ui/Button';
@@ -62,14 +63,11 @@ export default function Register() {
   return (
     <div className="flex min-h-screen items-center justify-center px-6 py-12">
       <div className="w-full max-w-md">
-        <div className="mb-8 flex items-center justify-center gap-2">
-          <div className="rounded-md bg-accent p-1.5 text-primary">
-            <GraduationCap size={20} strokeWidth={2.25} />
-          </div>
-          <span className="font-display text-lg font-semibold tracking-tight text-ink">ClubHub</span>
+        <div className="mb-8 flex justify-center">
+          <BrandLogo size="md" onDark={false} />
         </div>
 
-        <div className="rounded-lg border border-border bg-surface p-8">
+        <div className="rounded-2xl border border-border bg-surface p-6 sm:p-8">
           <h1 className="font-display text-xl font-semibold text-ink">Create your account</h1>
           <p className="mt-1 text-sm text-ink-muted">
             Every account starts as a student — coordinators are assigned by your club's admin.
@@ -134,7 +132,7 @@ export default function Register() {
               />
             </div>
 
-            <Button type="submit" className="w-full gradient-accent border-none hover:opacity-90" disabled={isSubmitting}>
+            <Button type="submit" className="w-full" disabled={isSubmitting}>
               {isSubmitting ? 'Creating account...' : 'Create account'}
             </Button>
           </form>

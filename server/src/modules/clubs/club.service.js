@@ -119,10 +119,10 @@ async function listClubs({ category, tag, search, status, page = 1, limit = 20 }
   const filter = {};
   if (category) filter.category = category;
   if (tag) filter.tags = tag;
-  if (status) filter.status = status;
-  // Public listings default to active clubs only, so pending/archived
-  // clubs don't show up in the directory unless explicitly requested
-  // (e.g. by an admin filtering status=pending).
+  // status=all (admin-only, enforced in the controller) means "no status
+  // filter". Otherwise listings default to active clubs only, so pending/
+  // rejected/suspended clubs never reach the public directory.
+  if (status && status !== 'all') filter.status = status;
   if (!status) filter.status = 'active';
   if (search) filter.$text = { $search: search };
 
@@ -142,6 +142,13 @@ async function listClubs({ category, tag, search, status, page = 1, limit = 20 }
       pages: Math.ceil(total / Number(limit)),
     },
   };
+}
+
+// Every club the user coordinates, in ANY status -- a coordinator whose club
+// is still pending/rejected/suspended must still be able to manage it (the
+// public list only ever returns active clubs).
+async function listMyClubs(userId) {
+  return Club.find({ coordinators: userId }).sort({ createdAt: -1 });
 }
 
 async function getClubBySlug(slug, requestingUser) {
@@ -223,6 +230,10 @@ async function removeCoordinator(club, userId) {
 
   club.coordinators = club.coordinators.filter((id) => id.toString() !== userId);
   await club.save();
+
+  // Stepping down shouldn't leave a stale 'coordinator' membership role
+  // behind; they stay on as a regular member.
+  await Membership.updateOne({ club: club._id, user: userId, role: 'coordinator' }, { $set: { role: 'member' } });
 
   return club;
 }
@@ -309,6 +320,7 @@ module.exports = {
   restoreClub,
   listClubs,
   getClubBySlug,
+  listMyClubs,
   updateClub,
   deleteClub,
   assignCoordinator,

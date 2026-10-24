@@ -1,30 +1,32 @@
-import { LayoutDashboard, Users, ClipboardList, ShieldCheck, Compass, PlusCircle, Calendar, Award, Mail } from 'lucide-react';
+import { Home, Users, ClipboardList, ShieldCheck, Compass, PlusCircle, Calendar, Award, Mail, FileText, Building2 } from 'lucide-react';
 
-// One nav map per role. The Sidebar reads from here rather than each
-// dashboard page defining its own links, so adding a page updates
-// navigation everywhere automatically.
+// One nav map per role -- the Sidebar reads from here, so adding a page
+// updates navigation everywhere. Labels follow the Campus Club hub design.
 export const navByRole = {
   student: [
-    { label: 'Dashboard', to: '/student', icon: LayoutDashboard },
-    { label: 'Explore Clubs', to: '/clubs', icon: Compass },
-    { label: 'Recruitment', to: '/recruitment', icon: ClipboardList },
+    { label: 'Home', to: '/student', icon: Home },
+    { label: 'Clubs', to: '/clubs', icon: Compass },
     { label: 'Events', to: '/events', icon: Calendar },
+    { label: 'Openings', to: '/recruitment', icon: ClipboardList },
+    { label: 'Applications', to: '/applications', icon: FileText },
     { label: 'Certificates', to: '/student/certificates', icon: Award },
     { label: 'Invites', to: '/invites', icon: Mail },
-    { label: 'Start a Club', to: '/clubs/new', icon: PlusCircle },
+    { label: 'Create Club', to: '/clubs/new', icon: PlusCircle },
   ],
   coordinator: [
-    { label: 'Dashboard', to: '/coordinator', icon: LayoutDashboard },
+    { label: 'Home', to: '/coordinator', icon: Home },
     { label: 'Members', to: '/coordinator/members', icon: Users },
-    { label: 'Recruitment', to: '/recruitment', icon: ClipboardList },
+    { label: 'Clubs', to: '/clubs', icon: Compass },
     { label: 'Events', to: '/events', icon: Calendar },
+    { label: 'Openings', to: '/recruitment', icon: ClipboardList },
     { label: 'Invites', to: '/invites', icon: Mail },
-    { label: 'Start a Club', to: '/clubs/new', icon: PlusCircle },
+    { label: 'Create Club', to: '/clubs/new', icon: PlusCircle },
   ],
   admin: [
-    { label: 'Dashboard', to: '/admin', icon: LayoutDashboard },
-    { label: 'Clubs', to: '/clubs', icon: Compass },
+    { label: 'Home', to: '/admin', icon: Home },
+    { label: 'Clubs', to: '/admin/clubs', icon: Building2 },
     { label: 'Users', to: '/admin/users', icon: Users },
     { label: 'Approvals', to: '/admin/approvals', icon: ShieldCheck },
+    { label: 'Events', to: '/events', icon: Calendar },
   ],
 };

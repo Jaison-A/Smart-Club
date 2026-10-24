@@ -34,8 +34,8 @@ export default function CreateClub() {
   return (
     <>
       <TopBar title="Create a Club" subtitle="Submit your club for admin review." />
-      <div className="mx-auto max-w-2xl p-8">
-        <ClubForm onSubmit={handleCreate} submitLabel="Submit for review" />
+      <div className="mx-auto max-w-6xl p-4 sm:p-8">
+        <ClubForm onSubmit={handleCreate} submitLabel="Submit for Approval" requireConfirmation />
       </div>
     </>
   );

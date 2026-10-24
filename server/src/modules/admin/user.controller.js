@@ -13,6 +13,11 @@ const getUser = catchAsync(async (req, res) => {
   return success(res, 200, { user }, 'User fetched successfully');
 });
 
+const getUserOverview = catchAsync(async (req, res) => {
+  const overview = await userService.getUserOverview(req.params.id);
+  return success(res, 200, overview, 'User overview fetched successfully');
+});
+
 const setRole = catchAsync(async (req, res, next) => {
   // An admin demoting/promoting themselves out of the admin role could
   // lock the platform out of admin access entirely if they're the only
@@ -38,4 +43,4 @@ const enableUser = catchAsync(async (req, res) => {
   return success(res, 200, { user }, 'User enabled successfully');
 });
 
-module.exports = { listUsers, getUser, setRole, disableUser, enableUser };
+module.exports = { listUsers, getUser, getUserOverview, setRole, disableUser, enableUser };

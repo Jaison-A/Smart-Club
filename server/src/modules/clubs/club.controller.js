@@ -42,6 +42,11 @@ const listClubs = catchAsync(async (req, res, next) => {
   return success(res, 200, result, 'Clubs fetched successfully');
 });
 
+const listMyClubs = catchAsync(async (req, res) => {
+  const clubs = await clubService.listMyClubs(req.user._id);
+  return success(res, 200, { clubs }, 'Your clubs fetched successfully');
+});
+
 const getClubBySlug = catchAsync(async (req, res) => {
   const club = await clubService.getClubBySlug(req.params.slug, req.user);
   return success(res, 200, { club }, 'Club fetched successfully');
@@ -90,6 +95,7 @@ const setOfficerTitle = catchAsync(async (req, res) => {
 });
 
 module.exports = {
+  listMyClubs,
   setOfficerTitle,
   createClub,
   approveClub,

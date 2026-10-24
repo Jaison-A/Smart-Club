@@ -1,4 +1,5 @@
 const express = require('express');
+const path = require('path');
 const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
@@ -34,6 +35,16 @@ app.use(
   })
 );
 app.use(express.json({ limit: '10kb' }));
+app.use(
+  '/uploads',
+  express.static(path.join(__dirname, '..', 'uploads'), {
+    setHeaders: (res) => {
+      // Helmet's default Cross-Origin-Resource-Policy is same-origin, which
+      // would block the frontend (another origin) from showing these images.
+      res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+    },
+  })
+);
 app.use(cookieParser());
 
 if (env.NODE_ENV === 'development') {

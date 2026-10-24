@@ -53,6 +53,11 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: '',
     },
+    bio: { type: String, trim: true, maxlength: 500, default: '' },
+    github: { type: String, trim: true, default: '' },
+    linkedin: { type: String, trim: true, default: '' },
+    website: { type: String, trim: true, default: '' },
+    resumeUrl: { type: String, trim: true, default: '' },
     isVerified: {
       type: Boolean,
       default: false,

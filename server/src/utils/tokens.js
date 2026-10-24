@@ -15,8 +15,12 @@ function generateAccessToken(user) {
 // Kept minimal on purpose — it should not carry role, since role could
 // change (e.g. promoted to coordinator) before the refresh token expires.
 function generateRefreshToken(user) {
+  // jti makes every refresh token unique. Without it, two tokens minted for the
+  // same user within the same second (iat has 1s resolution) would be byte-
+  // identical, so "rotating" could re-issue the very token it just revoked and
+  // replay detection would silently stop working.
   return jwt.sign(
-    { userId: user._id.toString() },
+    { userId: user._id.toString(), jti: crypto.randomBytes(12).toString('hex') },
     env.JWT_REFRESH_SECRET,
     { expiresIn: env.JWT_REFRESH_EXPIRES_IN }
   );

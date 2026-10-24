@@ -47,6 +47,13 @@ const clubSchema = new mongoose.Schema(
       type: String,
       default: '',
     },
+    // Shown on the club page; required by the creation form per the design
+    // ("Must have a faculty advisor").
+    facultyAdvisor: {
+      name: { type: String, trim: true, default: '' },
+      email: { type: String, trim: true, lowercase: true, default: '' },
+      designation: { type: String, trim: true, default: '' },
+    },
     coordinators: [
       {
         type: mongoose.Schema.Types.ObjectId,

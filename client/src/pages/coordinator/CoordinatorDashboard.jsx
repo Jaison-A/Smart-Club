@@ -29,13 +29,10 @@ export default function CoordinatorDashboard() {
 
     async function load() {
       try {
-        // In this phase, resolving "my club" happens via a clubs list
-        // filtered client-side; a dedicated /clubs?coordinator=me
-        // filter would be a natural small backend addition later.
-        const { data } = await clubsApi.list({ limit: 50 });
-        const myClub = data.data.clubs.find((c) =>
-          c.coordinators?.some((id) => id === user.id || id === user._id)
-        );
+        // /clubs/mine returns the user's clubs in ANY status, so a coordinator
+        // whose club is still pending (or rejected/suspended) can still manage it.
+        const { data } = await clubsApi.mine();
+        const myClub = data.data.clubs[0];
         if (cancelled) return;
         setClub(myClub || null);
 
@@ -106,7 +103,14 @@ export default function CoordinatorDashboard() {
         }
       />
 
-      <div className="space-y-6 p-8">
+      <div className="space-y-6 p-4 sm:p-8">
+        {club.status !== 'active' && (
+          <div role="status" className="rounded-lg border border-warning/40 bg-warning-bg px-4 py-3 text-sm text-warning">
+            {club.status === 'pending' && 'Your club is waiting for admin approval. It becomes visible to students once approved.'}
+            {club.status === 'rejected' && `Your club was not approved.${club.rejectionReason ? ` Reason: ${club.rejectionReason}` : ''}`}
+            {club.status === 'suspended' && 'Your club is currently suspended by an admin.'}
+          </div>
+        )}
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <StatCard label="Active Members" value={club.memberCount} icon={Users2} />
           <StatCard label="Open Drives" value={openDrives.length} icon={ClipboardList} />

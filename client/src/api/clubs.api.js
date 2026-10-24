@@ -2,6 +2,7 @@ import api from './axiosInstance';
 
 export const clubsApi = {
   list: (params) => api.get('/clubs', { params }),
+  mine: () => api.get('/clubs/mine'),
   getBySlug: (slug) => api.get(`/clubs/${slug}`),
   create: (payload) => api.post('/clubs', payload),
   update: (id, payload) => api.patch(`/clubs/${id}`, payload),

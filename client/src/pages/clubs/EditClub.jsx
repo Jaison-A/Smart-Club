@@ -50,7 +50,7 @@ export default function EditClub() {
   return (
     <>
       <TopBar title={`Edit ${club.name}`} subtitle="Update your club's information." />
-      <div className="mx-auto max-w-2xl p-8">
+      <div className="mx-auto max-w-6xl p-4 sm:p-8">
         <ClubForm initialValues={club} onSubmit={handleUpdate} submitLabel="Save changes" disableName />
       </div>
     </>

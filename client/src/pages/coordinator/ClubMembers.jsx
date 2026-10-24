@@ -29,10 +29,8 @@ export default function ClubMembers() {
   const load = useCallback(async () => {
     setIsLoading(true);
     try {
-      const { data } = await clubsApi.list({ limit: 50 });
-      const myClub = data.data.clubs.find((c) =>
-        c.coordinators?.some((id) => id === user.id || id === user._id)
-      );
+      const { data } = await clubsApi.mine();
+      const myClub = data.data.clubs[0];
       setClub(myClub || null);
 
       if (myClub) {

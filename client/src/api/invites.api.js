@@ -19,4 +19,5 @@ export const membershipInvitesApi = {
 
 export const usersApi = {
   search: (q) => api.get('/users/search', { params: { q } }),
+  memberships: (userId) => api.get(`/users/${userId}/memberships`),
 };

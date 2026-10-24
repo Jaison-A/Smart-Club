@@ -43,8 +43,21 @@ async function issueTokenPair(user) {
   return { accessToken, refreshToken };
 }
 
+// Login identifier may be an email or a register number (studentId). A
+// register number is only honoured when it matches exactly ONE account --
+// studentId isn't unique, and silently picking one of several matches
+// would be a security problem.
+async function findLoginUser(identifier) {
+  const value = String(identifier).trim();
+  if (value.includes('@')) {
+    return User.findOne({ email: value.toLowerCase() }).select('+password +refreshTokens');
+  }
+  const matches = await User.find({ studentId: value }).select('+password +refreshTokens').limit(2);
+  return matches.length === 1 ? matches[0] : null;
+}
+
 async function loginUser({ email, password }) {
-  const user = await User.findOne({ email }).select('+password +refreshTokens');
+  const user = await findLoginUser(email);
   if (!user) {
     throw new AppError('Invalid email or password', 401);
   }
@@ -74,21 +87,23 @@ async function refreshAccessToken(refreshToken) {
     throw new AppError('Invalid or expired refresh token', 401);
   }
 
-  const user = await User.findById(decoded.userId).select('+refreshTokens');
-  if (!user) {
-    throw new AppError('User no longer exists', 401);
-  }
-
   const hashed = hashToken(refreshToken);
-  if (!user.refreshTokens.includes(hashed)) {
-    // Token isn't in the stored list — either it was already rotated
-    // out (reused old token) or the user logged out. Treat as a
-    // potential replay and reject.
+
+  // Atomic check-and-remove: the filter requires `hashed` to still be in
+  // the array and $pull removes it in the same operation. If two requests
+  // race on one token (React StrictMode double-effect, two tabs), only ONE
+  // can match-and-pull; the other gets null and correctly fails, instead of
+  // both reading a stale copy and one whole-array save clobbering the other.
+  const user = await User.findOneAndUpdate(
+    { _id: decoded.userId, refreshTokens: hashed },
+    { $pull: { refreshTokens: hashed } },
+    { new: true }
+  ).select('+refreshTokens');
+
+  if (!user) {
     throw new AppError('Refresh token is no longer valid. Please log in again.', 401);
   }
 
-  // Rotate: remove the used token, issue a brand new pair.
-  user.refreshTokens = user.refreshTokens.filter((t) => t !== hashed);
   const tokens = await issueTokenPair(user);
 
   return { user, ...tokens };
@@ -122,10 +137,37 @@ async function changePassword(userId, currentPassword, newPassword) {
   await user.save();
 }
 
+const ALLOWED_PROFILE_FIELDS = [
+  'name', 'department', 'year', 'skills', 'interests',
+  'bio', 'github', 'linkedin', 'website', 'resumeUrl',
+];
+
+async function updateProfile(userId, updates) {
+  const user = await User.findById(userId);
+  if (!user) throw new AppError('User not found', 404);
+  // Only allow-listed fields are ever assigned (defence in depth on top of
+  // Zod stripping unknown keys) -- role/password/email can't be smuggled in.
+  ALLOWED_PROFILE_FIELDS.forEach((field) => {
+    if (updates[field] !== undefined) user[field] = updates[field];
+  });
+  await user.save({ validateBeforeSave: false });
+  return user;
+}
+
+async function updateAvatar(userId, avatarUrl) {
+  const user = await User.findById(userId);
+  if (!user) throw new AppError('User not found', 404);
+  user.avatarUrl = avatarUrl;
+  await user.save({ validateBeforeSave: false });
+  return user;
+}
+
 module.exports = {
   registerUser,
   loginUser,
   refreshAccessToken,
   logoutUser,
   changePassword,
+  updateProfile,
+  updateAvatar,
 };

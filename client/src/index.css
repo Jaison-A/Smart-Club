@@ -3,30 +3,31 @@
 @tailwind utilities;
 
 /*
-  Centralized theme tokens. Every color, font, and radius used across the
-  app is defined here once and referenced via CSS variables (through
-  tailwind.config.js) rather than hardcoded in components. Changing the
-  brand later means editing this file only.
+  Centralized theme tokens -- every colour/radius used by the app lives
+  here and is consumed through tailwind.config.js, never hardcoded in a
+  component. Two themes, switched by data-theme on <html> (ThemeContext):
 
-  Two themes: light (default, "varsity" green/gold) and dark (matched to
-  the Campus Club Hub reference: deep navy surfaces, cyan-to-purple
-  gradient accents). Switched via a `data-theme` attribute on <html>,
-  set by ThemeContext.
+    light  the original "varsity" green + gold look
+    dark   the Campus Club Hub reference: near-black navy surfaces,
+           cyan -> purple gradient accent
 */
 :root {
-  --color-primary: 21 50 38; /* #153226 */
-  --color-primary-light: 30 74 56; /* #1E4A38 */
-  --color-accent: 212 167 44; /* #D4A72C */
-  --color-accent-light: 230 195 96; /* #E6C360 */
+  --color-primary: 21 50 38;
+  --color-primary-light: 30 74 56;
+  --color-accent: 212 167 44;
+  --color-accent-light: 230 195 96;
+  --color-on-accent: 21 50 38;
+  --color-on-primary: 247 247 244;
   --gradient-accent: linear-gradient(90deg, rgb(var(--color-accent)), rgb(var(--color-accent-light)));
+  --gradient-primary: linear-gradient(90deg, rgb(var(--color-primary)), rgb(var(--color-primary-light)));
 
-  --color-bg: 247 247 244; /* #F7F7F4 */
+  --color-bg: 247 247 244;
   --color-surface: 255 255 255;
   --color-sidebar: 21 50 38;
   --color-border: 227 227 221;
 
-  --color-text: 20 35 28; /* #14231C */
-  --color-text-muted: 91 107 99; /* #5B6B63 */
+  --color-text: 20 35 28;
+  --color-text-muted: 91 107 99;
   --color-text-inverse: 247 247 244;
 
   --color-success: 22 163 74;
@@ -38,37 +39,50 @@
   --color-info: 37 99 235;
   --color-info-bg: 219 234 254;
 
-  --radius-sm: 6px;
-  --radius-md: 10px;
+  --color-teal: 13 148 136;
+  --color-purple: 126 34 206;
+
+  --nav-active-bg: rgb(255 255 255 / 0.1);
+  --nav-active-fg: 255 255 255;
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
   --radius-lg: 16px;
 }
 
-/* Dark theme -- deep navy/near-black surfaces, cyan-to-purple gradient
-   accent (matches the uploaded Campus Club Hub reference). */
 :root[data-theme='dark'] {
-  --color-primary: 34 211 238; /* cyan #22D3EE -- used for links/active states in dark mode */
-  --color-primary-light: 56 189 248;
-  --color-accent: 168 85 247; /* purple #A855F7 */
-  --color-accent-light: 34 211 238;
+  --color-primary: 34 211 238;
+  --color-primary-light: 103 232 249;
+  --color-accent: 168 85 247;
+  --color-accent-light: 192 132 252;
+  --color-on-accent: 8 11 20;
+  --color-on-primary: 8 11 20;
   --gradient-accent: linear-gradient(90deg, rgb(34 211 238), rgb(168 85 247));
+  --gradient-primary: linear-gradient(90deg, rgb(34 211 238), rgb(139 92 246));
 
-  --color-bg: 8 11 20; /* #080B14 */
-  --color-surface: 16 20 33; /* #101421 */
-  --color-sidebar: 10 13 22; /* #0A0D16 */
-  --color-border: 30 36 54; /* #1E2436 */
+  --color-bg: 11 15 26; /* #0B0F1A */
+  --color-surface: 17 24 39; /* #111827 */
+  --color-sidebar: 9 12 22;
+  --color-border: 31 41 55; /* #1F2937 */
 
-  --color-text: 236 240 250; /* near-white */
-  --color-text-muted: 140 150 175;
+  --color-text: 248 250 252; /* #F8FAFC */
+  --color-text-muted: 148 163 184; /* #94A3B8 */
   --color-text-inverse: 8 11 20;
 
-  --color-success: 52 211 153;
+  --color-success: 16 185 129;
   --color-success-bg: 6 46 36;
-  --color-warning: 251 191 36;
-  --color-warning-bg: 58 44 6;
-  --color-danger: 248 113 113;
+  --color-warning: 245 158 11;
+  --color-warning-bg: 58 40 6;
+  --color-danger: 239 68 68;
   --color-danger-bg: 62 18 18;
-  --color-info: 96 165 250;
+  --color-info: 59 130 246;
   --color-info-bg: 14 33 66;
+
+  --color-teal: 45 212 191;
+  --color-purple: 192 132 252;
+
+  --nav-active-bg: rgb(34 211 238 / 0.12);
+  --nav-active-fg: 34 211 238;
 }
 
 body {
@@ -78,18 +92,13 @@ body {
   transition: background-color 0.2s ease, color 0.2s ease;
 }
 
-/* Signature element: a left-edge stripe on cards/active nav items -- a
-   quiet nod to varsity-jacket piping in light mode, and to the
-   reference design's gradient accent bars in dark mode. */
-.stripe-accent {
-  border-left: 3px solid rgb(var(--color-accent));
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(var(--color-border)) transparent;
 }
 
-/* Gradient primary buttons/highlights -- opt-in via .gradient-accent,
-   used for primary CTAs to match the reference's cyan-to-purple pills.
-   Falls back to a solid accent fill automatically in light mode since
-   --gradient-accent resolves to a two-stop gradient of the same token
-   there too, just a subtler light-mode-appropriate one. */
-.gradient-accent {
-  background-image: var(--gradient-accent);
-}
+.stripe-accent { border-left: 3px solid rgb(var(--color-accent)); }
+.gradient-accent { background-image: var(--gradient-accent); }
+.gradient-primary { background-image: var(--gradient-primary); }
+.nav-active { background: var(--nav-active-bg); color: rgb(var(--nav-active-fg)); }
+:focus-visible { outline: 2px solid rgb(var(--color-accent)); outline-offset: 2px; }

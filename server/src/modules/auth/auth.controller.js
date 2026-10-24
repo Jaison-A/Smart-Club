@@ -1,5 +1,6 @@
 const catchAsync = require('../../utils/catchAsync');
 const { success } = require('../../utils/apiResponse');
+const AppError = require('../../utils/AppError');
 const env = require('../../config/env');
 const authService = require('./auth.service');
 
@@ -54,4 +55,17 @@ const changePassword = catchAsync(async (req, res) => {
   return success(res, 200, null, 'Password changed successfully. Please log in again.');
 });
 
-module.exports = { register, login, refresh, logout, getMe, changePassword };
+const updateProfile = catchAsync(async (req, res) => {
+  const user = await authService.updateProfile(req.user._id, req.body);
+  return success(res, 200, { user }, 'Profile updated successfully');
+});
+
+const uploadAvatar = catchAsync(async (req, res, next) => {
+  if (!req.file) return next(new AppError('No image file was uploaded', 400));
+  // Served statically at /uploads (see app.js) from the dir multer wrote to.
+  const avatarUrl = `/uploads/avatars/${req.file.filename}`;
+  const user = await authService.updateAvatar(req.user._id, avatarUrl);
+  return success(res, 200, { user }, 'Profile picture updated successfully');
+});
+
+module.exports = { register, login, refresh, logout, getMe, changePassword, updateProfile, uploadAvatar };

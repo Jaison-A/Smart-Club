@@ -1,4 +1,9 @@
 const User = require('../../models/User');
+const Membership = require('../../models/Membership');
+const Application = require('../../models/Application');
+const Certificate = require('../../models/Certificate');
+const EventRegistration = require('../../models/EventRegistration');
+const Club = require('../../models/Club');
 const AppError = require('../../utils/AppError');
 
 async function listUsers({ role, search, isActive, page = 1, limit = 20 } = {}) {
@@ -31,6 +36,26 @@ async function getUserById(id) {
   return user;
 }
 
+// Everything an admin needs to understand one user at a glance, fetched in parallel.
+async function getUserOverview(id) {
+  const user = await User.findById(id);
+  if (!user) throw new AppError('User not found', 404);
+
+  const [memberships, applications, registrationCount, certificateCount, coordinatingClubs] = await Promise.all([
+    Membership.find({ user: id, status: 'active' }).populate('club', 'name slug status'),
+    Application.find({ applicant: id })
+      .populate('drive', 'title')
+      .populate('club', 'name slug')
+      .sort({ submittedAt: -1 })
+      .limit(20),
+    EventRegistration.countDocuments({ user: id, status: 'registered' }),
+    Certificate.countDocuments({ user: id }),
+    Club.find({ coordinators: id }).select('name slug status'),
+  ]);
+
+  return { user, memberships, applications, registrationCount, certificateCount, coordinatingClubs };
+}
+
 async function setUserRole(userId, role) {
   const user = await User.findById(userId);
   if (!user) throw new AppError('User not found', 404);
@@ -52,4 +77,4 @@ async function setUserActive(userId, isActive) {
   return user;
 }
 
-module.exports = { listUsers, getUserById, setUserRole, setUserActive };
+module.exports = { listUsers, getUserById, getUserOverview, setUserRole, setUserActive };
